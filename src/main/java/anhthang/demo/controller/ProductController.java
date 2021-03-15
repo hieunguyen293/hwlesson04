@@ -1,7 +1,11 @@
 package anhthang.demo.controller;
 
+import anhthang.demo.dto.AccountDTO;
+import anhthang.demo.dto.GetAllProductWithAccInfo.ProductWithAccountInfo;
 import anhthang.demo.dto.ProductDTO;
 import anhthang.demo.model.Product;
+import anhthang.demo.service.AccountService;
+import anhthang.demo.service.AuthService;
 import anhthang.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,63 +20,25 @@ public class ProductController {
     ProductService productService;
 //    private final int ASC = 0;
 //    private final int DESC = 1;
+    @Autowired
+    AuthService authService;
 
+    @Autowired
+    AccountService accountService;
 
     @GetMapping("/get-all-products")
-    public List<ProductDTO> getAllProducts(@RequestParam(required = true) int sortType,@RequestParam(required = true) Integer sortColumn){
-        if (sortColumn == 0) {
-            if (sortType == 0) {
-                return productService.getAllProducts("ASC", "priceOut");
-            } else if (sortType == 1) {
-                return productService.getAllProducts("DESC", "priceOut");
-            } else {
-                return productService.getAllProducts("ASC", "priceOut");
-            }
-        }else if (sortColumn == 1){
-            if (sortType == 0) {
-                return productService.getAllProducts("ASC", "display");
-            } else if (sortType == 1) {
-                return productService.getAllProducts("DESC", "display");
-            } else {
-                return productService.getAllProducts("ASC", "display");
-            }
-        }else {
-            if (sortType == 0) {
-                return productService.getAllProducts("ASC", "priceOut");
-            } else if (sortType == 1) {
-                return productService.getAllProducts("DESC", "priceOut");
-            } else {
-                return productService.getAllProducts("ASC", "priceOut");
-            }
+    public ProductWithAccountInfo getAllProducts(@RequestParam(required = true) Integer sortType, @RequestParam(required = true) String sortColumn, @RequestHeader String token){
+        // query check database tuong ung voi token
+        // neu khong co user => fail
+        // neu co => lay ra userID
+        // lay user infor
+        // lay product infor
+        if (authService.checkSessionByToken(token) != 0){
+            AccountDTO accountDTO = accountService.getAccountByAccountID(authService.getSessionByToken(token).getUserID());
+            
         }
 
-        /*
-        String type;
-        String column;
-        switch(type){
-            case 0:
-                type = "ASC";
-            break;
-            case 1:
-                type = "DESC";
-            break;
-            default:
-                type = "ASC";
-            break;
-        switch(column){
-            case 0:
-                column = "priceOut";
-            break;
-            case 1:
-                column = "display";
-            break;
-            default:
-                column = "priceOut";
-            break;
-            return
-         */
-
-
+        return productService.getAllProducts(sortType, sortColumn, token);
 
     }
 
@@ -99,19 +65,40 @@ public class ProductController {
 //    }
 
     @GetMapping("/get-product-by-name")
+    // khong truyen gi => get all
+    //
     public Product getProductByName(@RequestParam String productName){
         return  productService.getProductByName(productName);
     }
 
     @PutMapping("/update-product-by-id")
-    public Boolean updateProductByID(@RequestParam String productID, @RequestParam String display,@RequestParam String priceIn,@RequestParam int priceOut,@RequestParam int priceSale,@RequestParam int amount,@RequestParam int shipday,@RequestParam String description,@RequestParam String images,@RequestParam int deleted){
+    // path: PUT product/:id (body)
+    // neu khong ton tai thi bao loi: khong ton tai
+    // them truong nao thi update khong thi phai giu nguyen
+    public Boolean updateProductByID(@RequestParam String productID, @RequestParam String display,@RequestParam int priceIn,@RequestParam int priceOut,@RequestParam int priceSale,@RequestParam int amount,@RequestParam int shipday,@RequestParam String description,@RequestParam String images,@RequestParam int deleted){
         return productService.updateProductByID(productID, display, priceIn, priceOut, priceSale, amount, shipday, description, images, deleted);
     }
 
     @DeleteMapping("/delete-product-by-id")
+    /*
+    path: DELETE product/:id
+    khong ton tai => bao la khong ton tai san pham nay
+     */
     public Boolean deleteProductByID(@RequestParam String productID){
         return productService.deleteProductByID(productID);
     }
+
+    //truyen vao display = "product1"
+
+    // update product set display = ..., where id = abc
+    // tao sql = update product set id = id;
+    // conditionSql = 'where id = abc'
+    //if(productDto.display != null){
+    // Sql +=',dsiplay =' + productDto.display
+    //}
+    // finalSql = sql + conditionSql
+
+
 
 
 }

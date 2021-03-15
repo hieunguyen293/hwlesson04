@@ -22,6 +22,12 @@ public class ApiExceptionHandler {
         return "Thieu input dau vao";
     }
 
+    @ExceptionHandler(ApiException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public String Login(Exception e, WebRequest request){
+        return "Sai tai khoan hoac mat khau";
+    }
+
     /*
     request duoc thuc hien qua cac tang`:
     interceptor;

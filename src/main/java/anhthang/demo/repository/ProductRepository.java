@@ -1,15 +1,12 @@
 package anhthang.demo.repository;
 
 import anhthang.demo.dto.ProductDTO;
-import anhthang.demo.model.Product;
-import anhthang.demo.helper.jdbcMapper.ProductMapper;
+import anhthang.demo.dto.ProductReqDTO;
+import anhthang.demo.helper.jdbcMapper.ProductDTOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,9 +16,22 @@ public class ProductRepository {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    public List<ProductDTO> getAllProducts(String sortType, String sortColum){
-        String sql = "select * from product where deleted = 0 ORDER BY "+sortColum+" "+sortType+";"; // asc || desc
-        List<ProductDTO> listProductDTO = jdbcTemplate.query(sql, new ProductMapper());
+    public List<ProductDTO> getAllProducts(Integer sortType, String sortColumn){
+        // 0: ASC, 1: DESC, default ASC
+        String sortStatus = sortType !=null && sortType == 0
+                ? " ASC"
+                : " DESC";
+//        if (sortType != null) {
+//            if (sortType != 0) {
+//                sortStatus = " DESC";
+//            }
+//        }
+        String sql = "select * from product where deleted = 0";
+        if (sortColumn != null) {
+            sql += " order by " + sortColumn + sortStatus;
+        }
+        System.out.printf("sql:" + sql);
+        List<ProductDTO> listProductDTO = jdbcTemplate.query(sql, new ProductDTOMapper());
         return listProductDTO;
     }
 
@@ -31,11 +41,11 @@ public class ProductRepository {
 //        return listProductDTO;
 //    }
 
-    public Product getProductById(String productID){
+    public ProductDTO getProductById(String productID){
         String sql = "select * from product where productID = ? and deleted = 0; ";
         Object[] params = {productID};
-        Product product = (Product)jdbcTemplate.queryForObject(sql, new ProductMapper(), params);
-        return product;
+        ProductDTO productDTO = (ProductDTO)jdbcTemplate.queryForObject(sql, new ProductDTOMapper(), params);
+        return productDTO;
     }
 
     public void createProduct(String display,String priceIn,int priceOut,int priceSale,int amount,int shipday,String description,String images,int deleted){
@@ -45,14 +55,14 @@ public class ProductRepository {
         jdbcTemplate.update(sql, params);
     }
 
-    public Product getProductByName(String productName){
+    public ProductDTO getProductByName(String productName){
         String sql = "select * from product where lower(display) = lower(?) and deleted = 0;";
         Object[] params = {productName};
-        Product product = (Product) jdbcTemplate.queryForObject(sql, new ProductMapper(), params);
-        return product;
+        ProductDTO productDTO = (ProductDTO) jdbcTemplate.queryForObject(sql, new ProductDTOMapper(), params);
+        return productDTO;
     }
 
-    public Integer updateProductByID(String productID, String display,String priceIn,int priceOut,int priceSale,int amount,int shipday,String description,String images,int deleted){
+    public Integer updateProduct(String productID, String display, int priceIn, int priceOut, int priceSale, int amount, int shipday, String description, String images, int deleted){
         String sql = "update product set display = ?, priceIn = ?, priceOut = ?, priceSale = ?, amount = ?, shipday = ?, description = ?, images = ?, deleted = ? where productID = ?;";
         Object[] params = {display, priceIn, priceOut, priceSale, amount, shipday, description, images, deleted, productID};
         return jdbcTemplate.update(sql, params);
@@ -63,5 +73,38 @@ public class ProductRepository {
         Object[] params = {productID};
         return jdbcTemplate.update(sql, params);
     }
+
+    public List<ProductReqDTO> createReceipt(){
+
+
+        return null;
+    }
+
+    public void checkAmountOfProduct(String productID, int amount){
+        ProductDTO productDTO = this.getProductById(productID);
+        Integer amountProduct = productDTO.getAmount() - amount;
+        if (amountProduct < 0){
+            System.out.println("khong du san pham"); //lam throw tai day
+        }else {
+            productDTO.setAmount(amountProduct);
+            this.updateProduct(productDTO.getProductID(),productDTO.getDisplay(), productDTO.getPriceIn(), productDTO.getPriceOut(),productDTO.getPriceSale(),productDTO.getAmount(),productDTO.getShipday(),productDTO.getDescription(),productDTO.getImages(),productDTO.getDeleted());
+
+        }
+    }
+
+
+    // lesson07 dung limit va offset trong sql
+//    public List<ProductDTO> getProduct2(Integer limit, Integer offset){
+//        String sql = "select * from product limit ?,?;";
+//        Object[] params = {offset,limit};
+//        List<ProductDTO> list = jdbcTemplate.query(sql, new ProductMapper(), params);
+//        return list;
+//    }
+//
+//    public Integer countProduct(){
+//        String sql = "select count(productID) from product;";
+//        Integer count = jdbcTemplate.update(sql);
+//        return count;
+//    }
 
 }
