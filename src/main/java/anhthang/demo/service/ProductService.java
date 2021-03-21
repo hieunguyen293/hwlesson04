@@ -1,10 +1,12 @@
 package anhthang.demo.service;
 
+import anhthang.demo.constant.JwtConstant;
 import anhthang.demo.dto.AccountDTO;
 import anhthang.demo.dto.GetAllProductWithAccInfo.AccountNullPassword;
 import anhthang.demo.dto.GetAllProductWithAccInfo.ProductWithAccountInfo;
 import anhthang.demo.dto.ProductDTO;
 import anhthang.demo.dto.SessionDTO;
+import anhthang.demo.helper.jdbcMapper.Jwt;
 import anhthang.demo.repository.AccountRepository;
 import anhthang.demo.repository.AuthRepository;
 import anhthang.demo.repository.ProductRepository;
@@ -26,9 +28,11 @@ public class ProductService {
 
 
     public ProductWithAccountInfo getAllProducts(Integer sortType,String sortColumn, String token){
-        if (authRepository.checkSessionByToken(token) != 0){
-            SessionDTO sessionDTO = authRepository.getSessionByToken(token);
-            AccountDTO accountDTO = accountRepository.getAccountByAccountID(sessionDTO.getUserID());
+        Jwt jwt = new Jwt();
+        String accountID = jwt.verifyToken(token, JwtConstant.SECRET_KEY);
+
+        if (accountRepository.checkAccoutByAccountID(accountID) != 0){
+            AccountDTO accountDTO = accountRepository.getAccountByAccountID(accountID);
 
             AccountNullPassword accountNullPassword = new AccountNullPassword();
             accountNullPassword.setAccountID(accountDTO.getAccountID());

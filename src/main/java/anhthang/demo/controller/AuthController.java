@@ -1,6 +1,5 @@
 package anhthang.demo.controller;
 
-import anhthang.demo.dto.AccountDTO;
 import anhthang.demo.dto.login.LoginRequestDTO;
 import anhthang.demo.dto.login.LoginResponseDTO;
 import anhthang.demo.exception.ApiException;
@@ -9,7 +8,6 @@ import anhthang.demo.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")

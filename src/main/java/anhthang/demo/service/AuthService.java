@@ -1,9 +1,11 @@
 package anhthang.demo.service;
 
+import anhthang.demo.constant.JwtConstant;
 import anhthang.demo.dto.AccountDTO;
 import anhthang.demo.dto.SessionDTO;
 import anhthang.demo.dto.login.LoginRequestDTO;
 import anhthang.demo.dto.login.LoginResponseDTO;
+import anhthang.demo.helper.jdbcMapper.Jwt;
 import anhthang.demo.repository.AccountRepository;
 import anhthang.demo.repository.AuthRepository;
 import anhthang.demo.repository.SessionRepository;
@@ -51,8 +53,10 @@ public class AuthService {
 
 
             if (accountDTO.getPassword().equals(hashPassword)){
-                String token = UUID.randomUUID().toString();
+
                 String userID = accountDTO.getAccountID();
+                Jwt jwt = new Jwt();
+                String token = jwt.generateToken(userID, JwtConstant.SECRET_KEY, JwtConstant.JWT_EXPIRATION);
                 SessionDTO sessionDTO = new SessionDTO(userID, token);
                 sessionRepository.addSession(sessionDTO);
                 LoginResponseDTO loginResponseDTO = new LoginResponseDTO(token);

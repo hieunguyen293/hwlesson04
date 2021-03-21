@@ -48,6 +48,12 @@ public class AccountRepository {
         return jdbcTemplate.update(sql, params);
     }
 
+    public Integer checkAccoutByAccountID(String accountID){
+        String sql = "select * from account where account = ?;";
+        Object[] params = {accountID};
+        return jdbcTemplate.update(sql, params);
+    }
+
 //    public Boolean addAccount(AccountDTO accountDTO){
 //
 //    }
